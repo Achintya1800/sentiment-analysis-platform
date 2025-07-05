@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Analysis Platform</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 0;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .main-container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .card-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        .upload-section {
+            border: 2px dashed #e0e7ff;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-section:hover {
+            border-color: #667eea;
+            background: #f8faff;
+        }
+
+        .upload-section.dragover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results {
+            display: none;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #f8faff 0%, #f1f5f9 100%);
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .positive { color: #059669; }
+        .negative { color: #dc2626; }
+        .neutral { color: #7c2d12; }
+
+        .sentiment-bar {
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 1rem 0;
+            background: #f1f5f9;
+            display: flex;
+        }
+
+        .sentiment-segment {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .positive-bar { background: #059669; }
+        .negative-bar { background: #dc2626; }
+        .neutral-bar { background: #7c2d12; }
+
+        .text-preview {
+            background: #f8faff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 1rem;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: #f8faff;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .error {
+            display: none;
+            background: #fef2f2;
+            color: #991b1b;
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px solid #fecaca;
+            margin-top: 1rem;
+        }
+
+        .success-badge {
+            background: #10b981;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                padding: 0 1rem;
+            }
+            
+            .card-header h1 {
+                font-size: 2rem;
+            }
+            
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+            <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-check"></i>
+                </div>
+                <span>Sentiment Analytics</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="card">
+            <div class="card-header">
+                <h1><i class="fas fa-chart-line"></i> Document Sentiment Analysis</h1>
+                <p>Advanced AI-powered sentiment analysis for professional document review</p>
+            </div>
+            
+            <div class="card-body">
+                <form id="analysisForm" enctype="multipart/form-data">
+                    <div class="upload-section" onclick="document.getElementById('pdf_file').click()">
+                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                        <h3>Upload Document</h3>
+                        <p>Click here or drag and drop your PDF file</p>
+                        <input type="file" id="pdf_file" name="pdf_file" accept=".pdf" class="file-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="api_key" class="form-label">
+                            <i class="fas fa-key"></i> Google Cloud API Key
+                        </label>
+                        <input type="password" id="api_key" name="api_key" class="form-input" 
+                               placeholder="Enter your Google Cloud Natural Language API key" required>
+                    </div>
+
+                    <button type="submit" class="btn" id="analyzeBtn">
+                        <i class="fas fa-brain"></i>
+                        Analyze Document Sentiment
+                    </button>
+                </form>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <h3>Processing Document...</h3>
+                    <p>Analyzing sentiment with Google AI</p>
+                </div>
+
+                <div class="error" id="error"></div>
+
+                <div class="results" id="results">
+                    <div class="file-info" id="fileInfo"></div>
+                    
+                    <h3 style="margin-bottom: 1rem;">
+                        <i class="fas fa-chart-pie"></i> Sentiment Analysis Results
+                    </h3>
+                    
+                    <div class="result-grid">
+                        <div class="metric-card">
+                            <div class="metric-value" id="overallSentiment"></div>
+                            <div class="metric-label">Overall Sentiment</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value positive" id="positivePercent"></div>
+                            <div class="metric-label">Positive Content</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value negative" id="negativePercent"></div>
+                            <div class="metric-label">Negative Content</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value neutral" id="neutralPercent"></div>
+                            <div class="metric-label">Neutral Content</div>
+                        </div>
+                    </div>
+
+                    <div class="sentiment-bar" id="sentimentBar"></div>
+
+                    <h4 style="margin: 2rem 0 1rem;">
+                        <i class="fas fa-file-alt"></i> Document Preview
+                    </h4>
+                    <div class="text-preview" id="textPreview"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let uploadedFile = null;
+
+        // File upload handling - Keep it simple
+        document.getElementById('pdf_file').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                uploadedFile = file;
+                const uploadSection = document.querySelector('.upload-section');
+                uploadSection.innerHTML = `
+                    <i class="fas fa-file-pdf upload-icon" style="color: #dc2626;"></i>
+                    <h3>${file.name}</h3>
+                    <p>File size: ${(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                `;
+            }
+        });
+
+        // Drag and drop
+        const uploadSection = document.querySelector('.upload-section');
+        
+        uploadSection.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadSection.classList.add('dragover');
+        });
+
+        uploadSection.addEventListener('dragleave', function(e) {
+            uploadSection.classList.remove('dragover');
+        });
+
+        uploadSection.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].type === 'application/pdf') {
+                uploadedFile = files[0];
+                uploadSection.innerHTML = `
+                    <i class="fas fa-file-pdf upload-icon" style="color: #dc2626;"></i>
+                    <h3>${files[0].name}</h3>
+                    <p>File size: ${(files[0].size / 1024 / 1024).toFixed(2)} MB</p>
+                `;
+            }
+        });
+
+        // Form submission
+        document.getElementById('analyzeBtn').addEventListener('click', async function(e) {
+            e.preventDefault();
+            
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const results = document.getElementById('results');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const apiKeyInput = document.getElementById('api_key');
+            
+            // Validate inputs
+            if (!uploadedFile) {
+                error.textContent = 'Please select a PDF file';
+                error.style.display = 'block';
+                return;
+            }
+            
+            if (!apiKeyInput.value.trim()) {
+                error.textContent = 'Please enter your Google API key';
+                error.style.display = 'block';
+                return;
+            }
+            
+            // Create FormData
+            const formData = new FormData();
+            formData.append('pdf_file', uploadedFile);
+            formData.append('api_key', apiKeyInput.value.trim());
+            
+            // Reset UI
+            loading.style.display = 'block';
+            error.style.display = 'none';
+            results.style.display = 'none';
+            analyzeBtn.disabled = true;
+            
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayResults(data);
+                    results.style.display = 'block';
+                } else {
+                    error.textContent = data.error || 'An error occurred during analysis';
+                    error.style.display = 'block';
+                }
+                
+            } catch (err) {
+                error.textContent = 'Network error. Please try again: ' + err.message;
+                error.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+                analyzeBtn.disabled = false;
+            }
+        });
+
+        function displayResults(data) {
+            const sentiment = data.sentiment_analysis;
+            
+            // File info
+            document.getElementById('fileInfo').innerHTML = `
+                <i class="fas fa-file-pdf" style="color: #dc2626; font-size: 2rem;"></i>
+                <div>
+                    <strong>${data.filename}</strong><br>
+                    <small>${data.word_count} words • ${data.character_count} characters</small>
+                </div>
+            `;
+            
+            // Metrics
+            document.getElementById('overallSentiment').textContent = sentiment.overall_sentiment;
+            document.getElementById('overallSentiment').className = 'metric-value ' + sentiment.overall_sentiment.toLowerCase();
+            
+            document.getElementById('positivePercent').textContent = sentiment.positive_percentage + '%';
+            document.getElementById('negativePercent').textContent = sentiment.negative_percentage + '%';
+            document.getElementById('neutralPercent').textContent = sentiment.neutral_percentage + '%';
+            
+            // Sentiment bar
+            const sentimentBar = document.getElementById('sentimentBar');
+            sentimentBar.innerHTML = `
+                <div class="sentiment-segment positive-bar" style="width: ${sentiment.positive_percentage}%">
+                    ${sentiment.positive_percentage > 10 ? sentiment.positive_percentage + '%' : ''}
+                </div>
+                <div class="sentiment-segment neutral-bar" style="width: ${sentiment.neutral_percentage}%">
+                    ${sentiment.neutral_percentage > 10 ? sentiment.neutral_percentage + '%' : ''}
+                </div>
+                <div class="sentiment-segment negative-bar" style="width: ${sentiment.negative_percentage}%">
+                    ${sentiment.negative_percentage > 10 ? sentiment.negative_percentage + '%' : ''}
+                </div>
+            `;
+            
+            // Text preview
+            document.getElementById('textPreview').textContent = data.extracted_text;
+        }
+
+        // Debug: Test button click
+        console.log('Button found:', document.getElementById('analyzeBtn'));
+    </script>
+</body>
+</html>
