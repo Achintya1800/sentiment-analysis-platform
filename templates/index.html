@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sentiment Analysis Platform</title>
+    <title>Enhanced Sentiment Analysis Platform</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         * {
@@ -58,7 +58,7 @@
         }
 
         .main-container {
-            max-width: 900px;
+            max-width: 1200px;
             margin: 2rem auto;
             padding: 0 1rem;
         }
@@ -287,16 +287,91 @@
             margin-top: 1rem;
         }
 
-        .success-badge {
-            background: #10b981;
-            color: white;
+        /* Enhanced styles for word insights */
+        .insights-section {
+            margin-top: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .insight-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f0;
+        }
+
+        .insight-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .insight-header.positive { color: #059669; }
+        .insight-header.negative { color: #dc2626; }
+
+        .word-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .word-tag {
+            background: #f1f5f9;
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border: 1px solid #e2e8f0;
+        }
+
+        .word-tag.positive {
+            background: #dcfce7;
+            border-color: #bbf7d0;
+            color: #059669;
+        }
+
+        .word-tag.negative {
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: #dc2626;
+        }
+
+        .explanation-box {
+            background: #f8faff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .context-item {
+            background: #f8faff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            font-size: 0.85rem;
+        }
+
+        .context-word {
+            font-weight: bold;
+            color: #667eea;
         }
 
         @media (max-width: 768px) {
+            .insights-section {
+                grid-template-columns: 1fr;
+            }
+            
             .header-content {
                 padding: 0 1rem;
             }
@@ -312,13 +387,13 @@
     </style>
 </head>
 <body>
-            <header class="header">
+    <header class="header">
         <div class="header-content">
             <div class="logo">
                 <div class="logo-icon">
-                    <i class="fas fa-check"></i>
+                    <i class="fas fa-brain"></i>
                 </div>
-                <span>Sentiment Analytics</span>
+                <span>Enhanced Sentiment Analytics</span>
             </div>
         </div>
     </header>
@@ -326,8 +401,8 @@
     <div class="main-container">
         <div class="card">
             <div class="card-header">
-                <h1><i class="fas fa-chart-line"></i> Document Sentiment Analysis</h1>
-                <p>Advanced AI-powered sentiment analysis for professional document review</p>
+                <h1><i class="fas fa-chart-line"></i> Enhanced Document Sentiment Analysis</h1>
+                <p>AI-powered sentiment analysis with word-level insights and explanations</p>
             </div>
             
             <div class="card-body">
@@ -356,7 +431,7 @@
                 <div class="loading" id="loading">
                     <div class="spinner"></div>
                     <h3>Processing Document...</h3>
-                    <p>Analyzing sentiment with Google AI</p>
+                    <p>Analyzing sentiment with detailed insights...</p>
                 </div>
 
                 <div class="error" id="error"></div>
@@ -389,6 +464,34 @@
 
                     <div class="sentiment-bar" id="sentimentBar"></div>
 
+                    <!-- Enhanced insights section -->
+                    <div class="insights-section">
+                        <div class="insight-card">
+                            <div class="insight-header positive">
+                                <i class="fas fa-thumbs-up"></i>
+                                <span>Positive Indicators</span>
+                            </div>
+                            <div class="word-list" id="positiveWords"></div>
+                            <div class="explanation-box" id="positiveExplanation"></div>
+                            <div id="positiveContexts"></div>
+                        </div>
+
+                        <div class="insight-card">
+                            <div class="insight-header negative">
+                                <i class="fas fa-thumbs-down"></i>
+                                <span>Negative Indicators</span>
+                            </div>
+                            <div class="word-list" id="negativeWords"></div>
+                            <div class="explanation-box" id="negativeExplanation"></div>
+                            <div id="negativeContexts"></div>
+                        </div>
+                    </div>
+
+                    <div class="explanation-box" id="overallExplanation" style="margin-top: 2rem;">
+                        <h4 style="margin-bottom: 0.5rem;"><i class="fas fa-lightbulb"></i> Overall Analysis</h4>
+                        <p id="overallExplanationText"></p>
+                    </div>
+
                     <h4 style="margin: 2rem 0 1rem;">
                         <i class="fas fa-file-alt"></i> Document Preview
                     </h4>
@@ -401,7 +504,7 @@
     <script>
         let uploadedFile = null;
 
-        // File upload handling - Keep it simple
+        // File upload handling
         document.getElementById('pdf_file').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -415,7 +518,7 @@
             }
         });
 
-        // Drag and drop
+        // Drag and drop functionality
         const uploadSection = document.querySelector('.upload-section');
         
         uploadSection.addEventListener('dragover', function(e) {
@@ -433,6 +536,7 @@
             const files = e.dataTransfer.files;
             if (files.length > 0 && files[0].type === 'application/pdf') {
                 uploadedFile = files[0];
+                document.getElementById('pdf_file').files = files;
                 uploadSection.innerHTML = `
                     <i class="fas fa-file-pdf upload-icon" style="color: #dc2626;"></i>
                     <h3>${files[0].name}</h3>
@@ -484,7 +588,7 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    displayResults(data);
+                    displayEnhancedResults(data);
                     results.style.display = 'block';
                 } else {
                     error.textContent = data.error || 'An error occurred during analysis';
@@ -500,7 +604,7 @@
             }
         });
 
-        function displayResults(data) {
+        function displayEnhancedResults(data) {
             const sentiment = data.sentiment_analysis;
             
             // File info
@@ -512,7 +616,7 @@
                 </div>
             `;
             
-            // Metrics
+            // Basic metrics
             document.getElementById('overallSentiment').textContent = sentiment.overall_sentiment;
             document.getElementById('overallSentiment').className = 'metric-value ' + sentiment.overall_sentiment.toLowerCase();
             
@@ -534,12 +638,74 @@
                 </div>
             `;
             
+            // Enhanced insights
+            displayWordInsights(sentiment);
+            
             // Text preview
             document.getElementById('textPreview').textContent = data.extracted_text;
         }
 
-        // Debug: Test button click
-        console.log('Button found:', document.getElementById('analyzeBtn'));
+        function displayWordInsights(sentiment) {
+            // Display positive words
+            const positiveWordsContainer = document.getElementById('positiveWords');
+            const positiveWords = sentiment.positive_words || [];
+            
+            if (positiveWords.length > 0) {
+                positiveWordsContainer.innerHTML = positiveWords.map(item => 
+                    `<span class="word-tag positive" title="Found ${item.count} time(s)">${item.word}</span>`
+                ).join('');
+            } else {
+                positiveWordsContainer.innerHTML = '<span class="word-tag">No positive words detected</span>';
+            }
+            
+            // Display negative words
+            const negativeWordsContainer = document.getElementById('negativeWords');
+            const negativeWords = sentiment.negative_words || [];
+            
+            if (negativeWords.length > 0) {
+                negativeWordsContainer.innerHTML = negativeWords.map(item => 
+                    `<span class="word-tag negative" title="Found ${item.count} time(s)">${item.word}</span>`
+                ).join('');
+            } else {
+                negativeWordsContainer.innerHTML = '<span class="word-tag">No negative words detected</span>';
+            }
+            
+            // Display explanations
+            const positiveExplanation = sentiment.sentiment_explanation?.positive_explanation || 
+                `The ${sentiment.positive_percentage}% positive sentiment is based on ${positiveWords.length} positive indicators found in the document.`;
+            
+            const negativeExplanation = sentiment.sentiment_explanation?.negative_explanation || 
+                `The ${sentiment.negative_percentage}% negative sentiment is driven by ${negativeWords.length} negative indicators such as strong negative language.`;
+            
+            document.getElementById('positiveExplanation').textContent = positiveExplanation;
+            document.getElementById('negativeExplanation').textContent = negativeExplanation;
+            
+            // Display word contexts
+            displayWordContexts('positiveContexts', positiveWords, 'positive');
+            displayWordContexts('negativeContexts', negativeWords, 'negative');
+            
+            // Overall explanation
+            const overallExplanation = sentiment.sentiment_explanation?.overall_explanation || 
+                `The document is classified as '${sentiment.overall_sentiment}' based on the balance of positive and negative indicators.`;
+            
+            document.getElementById('overallExplanationText').textContent = overallExplanation;
+        }
+
+        function displayWordContexts(containerId, words, type) {
+            const container = document.getElementById(containerId);
+            
+            if (words.length > 0) {
+                const contextHtml = words.slice(0, 3).map(item => `
+                    <div class="context-item">
+                        <span class="context-word">${item.word}</span>: "${item.context}"
+                    </div>
+                `).join('');
+                
+                container.innerHTML = contextHtml;
+            } else {
+                container.innerHTML = `<div class="context-item">No ${type} words found in context</div>`;
+            }
+        }
     </script>
 </body>
 </html>
